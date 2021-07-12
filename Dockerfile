@@ -1,5 +1,5 @@
 FROM golang:1.15.3
 
-COPY main /
+COPY main /main
 
-CMD ['./main']
+CMD ['/main']
