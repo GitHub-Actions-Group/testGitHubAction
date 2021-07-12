@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
-
+      # disabled cgo for airPine
+      CGO_ENABLED: 0
     steps:
       - uses: actions/checkout@v2
 

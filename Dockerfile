@@ -1,4 +1,5 @@
-FROM golang:1.15.3
+FROM alpine:latest
+#FROM golang:1.15.3
 
 COPY testGitHubAction /
-ENTRYPOINT /testGitHubAction
+ENTRYPOINT  ["./testGitHubAction"]
