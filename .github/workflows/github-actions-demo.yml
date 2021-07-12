@@ -1,68 +1,37 @@
-# main.yml
-name: deploy to targetEnv
+name: Go
+
 on:
   push:
-    branches:
-      - main
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      # 切换分支
-      - name: Checkout
-        uses: actions/checkout@master
-      # 下载 git submodule
-      - uses: srt32/git-actions@v0.0.3
-        with:
-          args: git submodule update --init --recursive
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
-      # golang 1.15.3
-      - name: use golang 1.15.3
+jobs:
+
+  myci:
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.15.3'
+          go-version: 1.16.3
 
-      # go build
-      - name: go build up
-        env:
-          GOOS: "linux"
-          GOARCH:  "amd64"
-          GOPROXY: "https://goproxy.cn"
-          CI: true
-        run: go build -o main main.go
+      - name: Build
+        run: go build -v ./...
 
-      # docker part
-      # 设置qemu来编译多个平台的镜像
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-
-      # 设置buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      # 配置缓存加快编译速度
-      - name: Cache Docker layers
-        uses: actions/cache@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          version: v1.29
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: pooncheebean
-          password: 8edef935-028c-4e56-aa46-685ddae9791c
-
-      # 编译并且推送到dockerhub
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          #platforms: linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
-          platforms: linux/amd64
-          #cache-from: type=local,src=/tmp/.buildx-cache
-          #cache-to: type=local,dest=/tmp/.buildx-cache
-          tags: |
-            pooncheebean/testgithubaction:latest
+      - name: Run Gosec Security Scanner
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          go get github.com/securego/gosec/cmd/gosec
+          gosec ./...
+      - name: Test
+        run: go test -v ./...
