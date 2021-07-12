@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 
 jobs:
-  myci:
+  ci-stage:
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on
