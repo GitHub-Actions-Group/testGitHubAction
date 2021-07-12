@@ -26,10 +26,10 @@ jobs:
           GOOS: "linux"
           GOARCH:  "amd64"
           CI: true
-        run: go build main.go
+        run: go build -o main main.go
 
       - name: test go
-        run: echo ${{ GITHUB_WORKSPACE }} && ls ${{ GITHUB_WORKSPACE }}
+        run: ls
 
       # Deploy
       - name: Deploy
