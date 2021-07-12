@@ -49,4 +49,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ponncheebean/testgithubaction:latest
+          tags: pooncheebean/testgithubaction:latest
