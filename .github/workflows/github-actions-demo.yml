@@ -1,27 +1,36 @@
-name: GitHub Actions Demo
-on: [push]
+# main.yml
+name: deploy to targetEnv
+on:
+  push:
+    branches:
+      - master
 jobs:
-  # job name
-  Explore-GitHub-Actions:
-    # run base on
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: pull code
-        run: echo "pulling code"
-      - name: compile code
-        run: echo "pulling code"
-      - name: build image
-        run : echo "build image"
-      - name: deploy
-        run : echo "deploy"
-#      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-#      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-#      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-#      - name: Check out repository code
-#        uses: actions/checkout@v2
-#      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-#      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-#      - name: List files in the repository
-#        run: |
-#          ls ${{ github.workspace }}
-#      - run: echo "🍏 This job's status is ${{ job.status }}."
+      # 切换分支
+      - name: Checkout
+        uses: actions/checkout@master
+      # 下载 git submodule
+      - uses: srt32/git-actions@v0.0.3
+        with:
+          args: git submodule update --init --recursive
+      # 使用 node:10
+      - name: use golang 1.15.3
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.3'
+      # go build
+      - name: go build up
+        env:
+          GOOS: "linux"
+          GOARCH:  "amd64"
+          CI: true
+        run: go build main.go
+
+      - name: test go
+        run: go run ./main
+
+      # Deploy
+      - name: Deploy
+        run: echo "Deploy"
