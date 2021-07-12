@@ -29,7 +29,7 @@ jobs:
         run: go build -o main main.go
 
       - name: test go
-        run: ls
+        run: go run main
 
       # Deploy
       - name: Deploy
