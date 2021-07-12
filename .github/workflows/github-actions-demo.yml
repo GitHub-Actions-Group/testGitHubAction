@@ -39,11 +39,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: pooncheebean
-          password: 378c0a12-e3a9-41f9-bd65-cdcadfd40e68
+      #- name: Login to DockerHub
+      #  uses: docker/login-action@v1
+      #  with:
+      #    username: pooncheebean
+      #    password: 378c0a12-e3a9-41f9-bd65-cdcadfd40e68
 
       - name: Build and push
         uses: docker/build-push-action@v2
@@ -51,3 +51,6 @@ jobs:
           context: .
           push: true
           tags: pooncheebean/testgithubaction:latest
+          secrets: |
+            "username=${{ secrets.DOCKERHUB_TOKEN }}"
+            "password=${{ secrets.DOCKERHUB_USERNAME }}"
