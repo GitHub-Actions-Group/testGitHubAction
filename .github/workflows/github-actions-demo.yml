@@ -12,7 +12,8 @@ jobs:
       GO111MODULE: on
     steps:
       - uses: actions/checkout@v2
-
+        with:
+          path: workdir
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
