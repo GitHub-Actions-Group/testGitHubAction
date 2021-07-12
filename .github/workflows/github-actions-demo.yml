@@ -50,6 +50,8 @@ jobs:
           username: pooncheebean
           password: 8edef935-028c-4e56-aa46-685ddae9791c
 
+      - name: ls
+        run: ls
       # 编译并且推送到dockerhub
       - name: Build and push
         uses: docker/build-push-action@v2
