@@ -7,7 +7,8 @@ on:
 
 jobs:
   ci-stage:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: own-runner
     env:
       GO111MODULE: on
       # disabled cgo for airPine
