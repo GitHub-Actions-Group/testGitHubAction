@@ -1,53 +1,103 @@
-apiVersion: apps/v1  # 指定api版本，此值必须在kubectl api-versions中  
-kind: Deployment  # 指定创建资源的角色/类型   
-metadata:  # 资源的元数据/属性 
-  name: github-actions  # 资源的名字，在同一个namespace中必须唯一
-  namespace: default # 部署在哪个namespace中
-  labels:  # 设定资源的标签
-    app: github-actions
-    version: stable
-spec: # 资源规范字段
-  replicas: 3 # 声明副本数目
-  revisionHistoryLimit: 3 # 保留历史版本
-  selector: # 选择器
-    matchLabels: # 匹配标签
-      app: github-actions
-      version: stable
-  strategy: # 策略
-    rollingUpdate: # 滚动更新
-      maxSurge: 30% # 最大额外可以存在的副本数，可以为百分比，也可以为整数
-      maxUnavailable: 30% # 示在更新过程中能够进入不可用状态的 Pod 的最大值，可以为百分比，也可以为整数
-    type: RollingUpdate # 滚动更新策略
-  template: # 模版
-    metadata: # 资源的元数据/属性 
-      annotations: # 自定义注解列表
-        sidecar.istio.io/inject: "false" # 自定义注解名字
-      labels: # 设定资源的标签
-        app: github-actions
-        version: stable
-    spec: # 资源规范字段
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: zone
-          whenUnsatisfiable: DoNotSchedule #  ScheduleAnyway 为软策略
-          labelSelector:
-            matchLabels:
-              app: github-actions
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              app: github-actions
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    reloader.stakater.com/search: "true"
+  name: shared-qa-simple-cicd-for-go
+  namespace: qa-paas-sre
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: shared-qa-simple-cicd-for-go
+  template:
+    metadata:
+      labels:
+        app: shared-qa-simple-cicd-for-go
+      annotations:
+        prometheus.io/port: '8080'
+        prometheus.io/scrape: 'true'
+        deployment.application.cd/change_id: ""
+        deployment.application.cd/env: qa
+        deployment.application.cd/region: CNE2
+        deployment.application.cd/subscription: Shared
+        deployment.application.cd/version: v20210713173450
+        deployment.application.metadata/app-component: simple-cicd-for-go
+        deployment.application.metadata/application: paas-sre-toolkit
+        deployment.application.metadata/domain: PaaS
+        deployment.application.metadata/git-branch: ""
+        deployment.application.metadata/git-commit: ""
+        deployment.application.metadata/git-url: ""
+        deployment.application.metadata/use_vault: ""
+    spec:
       containers:
-      - name: app # 容器的名字
-        image: pooncheebean/testgithubaction:latest # 容器使用的镜像地址
-        imagePullPolicy: Always # 每次Pod启动拉取镜像策略，三个选择 Always、Never、IfNotPresent
-        resources: # 资源管理
-          limits: # 最大使用
-            #hugepages-2Mi: 50Mi
-            cpu: 300m # CPU，1核心 = 1000m
-            memory: 50Mi # 内存，1G = 1024Mi
-          requests:  # 容器运行时，最低资源需求，也就是说最少需要多少资源容器才能正常运行
-            cpu: 100m
-            memory: 50Mi
+        - name: shared-qa-simple-cicd-for-go
+          image: ***.azurecr.cn/paas-sre-toolkit/simple-cicd-for-go:v20210713173450
+          imagePullPolicy: Always
+          volumeMounts:
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 360 ## equals to the maximum startup time of the application + couple of seconds
+            periodSeconds: 30
+            timeoutSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60 ## equals to minimum startup time of the application
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+          env:
+            - name: FORCE_REDEPLOY
+              value: ''
+            - name: CONSUL_ADDR
+              value: ''
+            - name: profile
+              value: qa
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: "***"
+      volumes:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: 'app'
+                      operator: In
+                      values:
+                        - shared-qa-simple-cicd-for-go
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  -  {key: nodeType, operator: In, values: ["slave"]}
+                  -  {key: for-slave, operator: In, values: ["true"]}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shared-qa-simple-cicd-for-go
+  namespace: qa-paas-sre
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    app: shared-qa-simple-cicd-for-go

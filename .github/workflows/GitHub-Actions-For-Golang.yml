@@ -20,7 +20,6 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
@@ -57,5 +56,14 @@ jobs:
           push: true
           tags: pooncheebean/testgithubaction:latest
 
-      - name: Deploy to Kubernetes
-        run: kubectl apply -f app.yaml
+      - name: create json
+        run: echo '{"name":"Jack"}' > annotations.json
+
+      - name: Annotate
+        uses: Attest/annotations-action@v0.1.0
+        with:
+          token: ${{ secrets.MY_TOKEN }}
+          input: './annotations.json'
+          title: 'Annotate Files
+      #- name: Deploy to Kubernetes
+      #  run: kubectl apply -f app.yaml
