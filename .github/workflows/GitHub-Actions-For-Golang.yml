@@ -64,6 +64,6 @@ jobs:
         with:
           token: ${{ secrets.MY_TOKEN }}
           input: './annotations.json'
-          title: 'Annotate Files
+          title: 'Annotate Files'
 #- name: Deploy to Kubernetes
 #  run: kubectl apply -f app.yaml
