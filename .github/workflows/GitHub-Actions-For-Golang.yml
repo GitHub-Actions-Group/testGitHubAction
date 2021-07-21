@@ -56,36 +56,5 @@ jobs:
           push: true
           tags: pooncheebean/testgithubaction:latest
 
-      - name: create json
-        run: >
-          echo '[
-                 {
-                   "message": "This is a annotation message",
-                   "path": "annotations.json",
-                   "column": { "start": 17, "end": 45 },
-                   "line": { "start": 3, "end": 3 },
-                   "level": "notice"
-                 },
-                 {
-                   "message": "This is a annotation group",
-                   "path": "annotations.json",
-                   "column": { "start": 3, "end": 4 },
-                   "line": { "start": 9, "end": 15 },
-                   "level": "notice"
-                 },
-                 {
-                   "message": "This is a annotation on file outside of changed",
-                   "path": "LICENSE.md",
-                   "line": { "start": 1, "end": 1 },
-                   "level": "warning"
-                 }
-               ]' > annotations.json
-
-      - name: Annotate
-        uses: Attest/annotations-action@master
-        with:
-          token: ${{ secrets.MY_TOKEN }}
-          input: './annotations.json'
-          title: 'Annotate Files'
 #- name: Deploy to Kubernetes
 #  run: kubectl apply -f app.yaml
