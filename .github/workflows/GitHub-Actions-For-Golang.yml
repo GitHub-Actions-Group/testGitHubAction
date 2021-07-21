@@ -60,7 +60,7 @@ jobs:
         run: echo '{"name":"Jack"}' > annotations.json
 
       - name: Annotate
-        uses: Attest/annotations-action@v0.1.0
+        uses: Attest/annotations-action@master
         with:
           token: ${{ secrets.MY_TOKEN }}
           input: './annotations.json'
